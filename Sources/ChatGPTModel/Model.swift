@@ -79,6 +79,27 @@ public class ChatGPTModel: Identifiable, Codable {
 		self.dateSuffix = dateSuffix
 	}
 	
+	public convenience init(id: String, priceAdjustmentFactor: Double = 1) {
+		var id = id.lowercased()
+		var dateSuffix: String?
+		
+		var components = id.components(separatedBy: "-")
+		
+		if let last = components.last,
+		   let (number, _) = Date.parse(string: last) {
+			
+			dateSuffix = number
+			let _ = components.removeLast()
+			id = components.map {$0}.joined(separator: "-")
+		}
+		
+		guard let base = ChatGPTBaseModel.get(from: id) else {
+			fatalError("Unable to parse provided ID and find a valid GPT model.")
+		}
+		
+		self.init(base, priceAdjustmentFactor: priceAdjustmentFactor, dateSuffix: dateSuffix)
+	}
+	
 	// MARK: - API
 	
 	public func filterMessagesToFitBudget(

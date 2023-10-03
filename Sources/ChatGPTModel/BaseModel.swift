@@ -17,10 +17,22 @@ public class ChatGPTBaseModel: Codable {
 		self.budget = budget
 	}
 	
-	static let gpt_3   = ChatGPTBaseModel(.gpt3, budget: .init(input: 0.0075, output: 0.0025))
-	static let gpt_3_16k = ChatGPTBaseModel(.gpt16k, budget: .init(input: 0.015, output: 0.005))
-	static let gpt_4   = ChatGPTBaseModel(.gpt4, budget: .init(input: 0.075, output: 0.025))
-	static let gpt_4_32k = ChatGPTBaseModel(.gpt32k, budget: .init(input: 0.15, output: 0.25))
+	public static let gpt_3 = ChatGPTBaseModel(
+		.gpt3,
+		budget: .init(input: 0.0075, output: 0.0025)
+	)
+	public static let gpt_3_16k = ChatGPTBaseModel(
+		.gpt16k,
+		budget: .init(input: 0.015, output: 0.005)
+	)
+	public static let gpt_4 = ChatGPTBaseModel(
+		.gpt4,
+		budget: .init(input: 0.075, output: 0.025)
+	)
+	public static let gpt_4_32k = ChatGPTBaseModel(
+		.gpt32k,
+		budget: .init(input: 0.15, output: 0.25)
+	)
 	
 	public class Budget: Codable {
 		var input: Double
@@ -30,6 +42,22 @@ public class ChatGPTBaseModel: Codable {
 			self.input = input
 			self.output = output
 		}
+	}
+	
+	static func get(from id: String) -> ChatGPTBaseModel? {
+		
+		for model in ChatGPTBaseModelEnum.allCases.sorted(by: { $0.id.count > $1.id.count }) {
+			if id.contains(model.id) {
+				switch model {
+					case .gpt3: return .gpt_3
+					case .gpt16k: return .gpt_3_16k
+					case .gpt4: return .gpt_4
+					case .gpt32k: return .gpt_4_32k
+				}
+			}
+		}
+		
+		return nil
 	}
 }
 
