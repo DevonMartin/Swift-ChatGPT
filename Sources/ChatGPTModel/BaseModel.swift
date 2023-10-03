@@ -5,7 +5,8 @@
 //  Created by Devon Martin on 10/3/23.
 //
 
-public class ChatGPTBaseModel: Codable {
+public class ChatGPTBaseModel: Codable, Equatable {
+	
 	private let base: ChatGPTBaseModelEnum
 	internal var budget: Budget
 	
@@ -58,6 +59,10 @@ public class ChatGPTBaseModel: Codable {
 		}
 		
 		return nil
+	}
+	
+	public static func == (lhs: ChatGPTBaseModel, rhs: ChatGPTBaseModel) -> Bool {
+		lhs.base == rhs.base
 	}
 }
 
