@@ -2,11 +2,16 @@ import XCTest
 @testable import ChatGPTModel
 
 final class ChatGPTModelTests: XCTestCase {
-    func testExample() throws {
-        // XCTest Documentation
-        // https://developer.apple.com/documentation/xctest
+    func testExample() async throws {
 
-        // Defining Test Cases and Test Methods
-        // https://developer.apple.com/documentation/xctest/defining_test_cases_and_test_methods
+		let model = ChatGPTModel(.gpt_3, priceAdjustmentFactor: 1, dateSuffix: nil)
+		let messages: [OpenAiApiMessage] = [
+			.init(role: .system, content: "Respond only \"test\""),
+			.init(role: .user, content: "Hello!")
+		]
+		
+		let filtered = try await model.filterMessagesToFitBudget(messages)
+		
+		XCTAssert(filtered.messages.count == 2)
     }
 }
