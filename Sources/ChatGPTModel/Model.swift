@@ -7,11 +7,11 @@ import Tiktoken
 @Observable
 public class ChatGPTModel: Identifiable, Codable {
 	private static var counter: Tiktoken?
-	private let base: ChatGPTBaseModel
 	private let baseTokenCostDivisor: Double
 	
 	// MARK: - Properties
 	
+	public let base: ChatGPTBaseModel
 	public let priceAdjustmentFactor: Double
 	public let dateSuffix: String?
 	public var budget: ChatGPTBaseModel.Budget { base.budget }
