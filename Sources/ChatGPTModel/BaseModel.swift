@@ -5,37 +5,34 @@
 //  Created by Devon Martin on 10/3/23.
 //
 
-public class ChatGPTBaseModel: Codable, Equatable {
+import Foundation
+
+public struct ChatGPTBaseModel: Codable, Equatable {
 	
-	private let base: ChatGPTBaseModelEnum
-	public var budget: Budget
+	public var id: String { base.id }
 	
-	internal var id: String { base.id }
 	internal var tokens: (max: Int, cost: (input: Double, output: Double)) { base.tokens }
-	
-	internal init(_ base: ChatGPTBaseModelEnum, budget: Budget) {
-		self.base = base
-		self.budget = budget
+	internal var budget: ChatGPTBudget {
+		switch base {
+			case .gpt3: .gpt3
+			case .gpt16k: .gpt16k
+			case .gpt4: .gpt4
+			case .gpt32k: .gpt32k
+		}
 	}
 	
-	public static let gpt_3 = ChatGPTBaseModel(
-		.gpt3,
-		budget: .init(input: 0.0075, output: 0.0025)
-	)
-	public static let gpt_3_16k = ChatGPTBaseModel(
-		.gpt16k,
-		budget: .init(input: 0.015, output: 0.005)
-	)
-	public static let gpt_4 = ChatGPTBaseModel(
-		.gpt4,
-		budget: .init(input: 0.075, output: 0.025)
-	)
-	public static let gpt_4_32k = ChatGPTBaseModel(
-		.gpt32k,
-		budget: .init(input: 0.15, output: 0.25)
-	)
+	private let base: ChatGPTBaseModelEnum
 	
-	static func get(from id: String) -> ChatGPTBaseModel? {
+	fileprivate init(_ base: ChatGPTBaseModelEnum) {
+		self.base = base
+	}
+	
+	public static let gpt_3 = ChatGPTBaseModel(.gpt3)
+	public static let gpt_3_16k = ChatGPTBaseModel(.gpt16k)
+	public static let gpt_4 = ChatGPTBaseModel(.gpt4)
+	public static let gpt_4_32k = ChatGPTBaseModel(.gpt32k)
+	
+	internal static func get(from id: String) -> ChatGPTBaseModel? {
 		
 		for model in ChatGPTBaseModelEnum.allCases.sorted(by: { $0.id.count > $1.id.count }) {
 			if id.contains(model.id) {
@@ -51,22 +48,12 @@ public class ChatGPTBaseModel: Codable, Equatable {
 		return nil
 	}
 	
-	public class Budget: Codable {
-		public var input: Double
-		public var output: Double
-		
-		init(input: Double, output: Double) {
-			self.input = input
-			self.output = output
-		}
-	}
-	
 	public static func == (lhs: ChatGPTBaseModel, rhs: ChatGPTBaseModel) -> Bool {
 		lhs.base == rhs.base
 	}
 }
 
-enum ChatGPTBaseModelEnum: String, CaseIterable, Codable {
+fileprivate enum ChatGPTBaseModelEnum: String, CaseIterable, Codable {
 	case gpt3 = "gpt-3.5-turbo"
 	case gpt16k = "gpt-3.5-turbo-16k"
 	case gpt4 = "gpt-4"

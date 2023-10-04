@@ -4,8 +4,7 @@
 import Foundation
 import Tiktoken
 
-@Observable
-public class ChatGPTModel: Identifiable, Codable {
+public struct ChatGPTModel: Identifiable, Codable {
 	private static var counter: Tiktoken?
 	private let baseTokenCostDivisor: Double
 	
@@ -14,7 +13,7 @@ public class ChatGPTModel: Identifiable, Codable {
 	public let base: ChatGPTBaseModel
 	public let priceAdjustmentFactor: Double
 	public let dateSuffix: String?
-	public var budget: ChatGPTBaseModel.Budget { base.budget }
+	public var budget: ChatGPTBudget { base.budget }
 	
 	public var tokens: (
 		max: Int,
@@ -79,7 +78,7 @@ public class ChatGPTModel: Identifiable, Codable {
 		self.dateSuffix = dateSuffix
 	}
 	
-	public convenience init(id: String, priceAdjustmentFactor: Double = 1) {
+	public init(id: String, priceAdjustmentFactor: Double = 1) {
 		var id = id.lowercased()
 		var dateSuffix: String?
 		
@@ -141,7 +140,7 @@ public class ChatGPTModel: Identifiable, Codable {
 		return (inputTokenBudget, affordableOutputTokens)
 	}
 	
-	private func filter(
+	internal func filter(
 		_ messages: [OpenAiApiMessage],
 		budget: Int
 	) async throws -> (filteredMessages: [OpenAiApiMessage], tokenUsage: Int) {

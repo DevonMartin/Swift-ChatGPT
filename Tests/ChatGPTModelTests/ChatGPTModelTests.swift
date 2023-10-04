@@ -2,18 +2,37 @@ import XCTest
 @testable import ChatGPTModel
 
 final class ChatGPTModelTests: XCTestCase {
-    func testExample() async throws {
+    func testOutputBudgetAmounts() async throws {
+		print("")
 
-//		let model = ChatGPTModel(.gpt_3, priceAdjustmentFactor: 1, dateSuffix: nil)
-		let model = ChatGPTModel(id: "gpt-3.5-turbo-0613")
+		let models: [ChatGPTModel] = [
+			.init(.gpt_3),
+			.init(.gpt_3_16k),
+			.init(.gpt_4),
+			.init(.gpt_4_32k)
+		]
 		
 		let messages: [OpenAiApiMessage] = [
 			.init(role: .system, content: "Respond only \"test\""),
 			.init(role: .user, content: "Hello!")
 		]
 		
-		let filtered = try await model.filterMessagesToFitBudget(messages)
+		var additionAmount = 0.00001
 		
-		XCTAssert(filtered.messages.count == 2)
+		for model in models {
+			
+			while model.budget.output <= model.tokens.maxCost.output {
+				
+				model.budget.output += additionAmount
+				
+				let results = try await model.filterMessagesToFitBudget(messages)
+				let (filteredMessages, maxOutputTokens) = results
+				
+				XCTAssert(filteredMessages.count == 2)
+				XCTAssert(maxOutputTokens == nil || maxOutputTokens! < model.tokens.max)
+			}
+			
+			additionAmount *= 10
+		}
     }
 }
