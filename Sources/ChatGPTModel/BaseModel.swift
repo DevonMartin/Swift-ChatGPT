@@ -52,8 +52,8 @@ public class ChatGPTBaseModel: Codable, Equatable {
 	}
 	
 	public class Budget: Codable {
-		var input: Double
-		var output: Double
+		public var input: Double
+		public var output: Double
 		
 		init(input: Double, output: Double) {
 			self.input = input
