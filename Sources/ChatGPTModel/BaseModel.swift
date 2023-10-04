@@ -8,7 +8,7 @@
 public class ChatGPTBaseModel: Codable, Equatable {
 	
 	private let base: ChatGPTBaseModelEnum
-	internal var budget: Budget
+	public var budget: Budget
 	
 	internal var id: String { base.id }
 	internal var tokens: (max: Int, cost: (input: Double, output: Double)) { base.tokens }
@@ -35,16 +35,6 @@ public class ChatGPTBaseModel: Codable, Equatable {
 		budget: .init(input: 0.15, output: 0.25)
 	)
 	
-	public class Budget: Codable {
-		var input: Double
-		var output: Double
-		
-		init(input: Double, output: Double) {
-			self.input = input
-			self.output = output
-		}
-	}
-	
 	static func get(from id: String) -> ChatGPTBaseModel? {
 		
 		for model in ChatGPTBaseModelEnum.allCases.sorted(by: { $0.id.count > $1.id.count }) {
@@ -59,6 +49,16 @@ public class ChatGPTBaseModel: Codable, Equatable {
 		}
 		
 		return nil
+	}
+	
+	public class Budget: Codable {
+		var input: Double
+		var output: Double
+		
+		init(input: Double, output: Double) {
+			self.input = input
+			self.output = output
+		}
 	}
 	
 	public static func == (lhs: ChatGPTBaseModel, rhs: ChatGPTBaseModel) -> Bool {
