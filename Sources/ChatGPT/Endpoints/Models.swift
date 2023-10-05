@@ -55,32 +55,60 @@ public struct AvailableModels {
 }
 
 extension AvailableModels {
+	
+	/// Fetches the list of available GPT models using the provided API key.
+	///
+	/// - Parameter apiKey: An API key for authenticating with OpenAI's API, obtainable at
+	/// [OpenAI's website](https://platform.openai.com/account/api-keys).
+	/// - Returns: An array of `Model` objects representing the accessible GPT models.
+	/// - Throws: An error if the request fails.
 	public static func fetchAll(with apiKey: String) async throws -> [Models.Model] {
 		return try await withCheckedThrowingContinuation { continuation in
 			var request = URLRequest(url: URL(string: endpointURL)!)
 			request.httpMethod = "GET"
 			request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
 			
-			let task = URLSession.shared.dataTask(with: request) { data, response, error in
-				if let error = error {
-					continuation.resume(throwing: error)
-				} else if let data {
-					do {
-						let decodedModels = try JSONDecoder().decode(Models.self, from: data)
-						continuation.resume(returning: decodedModels.data ?? [])
-					} catch {
-						continuation.resume(throwing: error)
-					}
+			URLSession.shared.dataTask(with: request) { data, response, error in
+				guard error == nil else { 
+					print("\nError is not null: \(error!)\n")
+					continuation.resume(throwing: error!)
+					return
 				}
-			}
-			task.resume()
+				
+				guard let data else {
+					print("\nData is null.\n")
+					continuation.resume(throwing: AvailableModelsError.badKey)
+					return
+				}
+				
+				do {
+					let decodedModels = try JSONDecoder().decode(Models.self, from: data)
+					if let models = decodedModels.data {
+						continuation.resume(returning: models)
+					} else {
+						print("decodedModels is null.")
+						continuation.resume(throwing: AvailableModelsError.badKey)
+					}
+					
+				} catch {
+					continuation.resume(throwing: error)
+				}
+			}.resume()
 		}
 	}
 	
-	public static func fetchChatCompletion(with apiKey: String) async throws -> [Models.Model] {
+	/// Fetches the list of available GPT models compatible with the `Chat Completion` endpoint.
+	///
+	/// - Parameter apiKey: An API key for authenticating with OpenAI's API, obtainable at
+	/// [OpenAI's website](https://platform.openai.com/account/api-keys).
+	/// - Returns: An array of `ChatGPTModel` objects representing the accessible GPT models.
+	/// - Throws: An error if the request fails.
+	public static func fetchChatCompletion(with apiKey: String) async throws -> [ChatGPTModel] {
 		try await fetchAll(with: apiKey).filter {
 			$0.id.contains("gpt") &&
 			!$0.id.contains("instruct")
+		}.map {
+			ChatGPTModel(id: $0.id)
 		}
 	}
 	
