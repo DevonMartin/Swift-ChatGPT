@@ -5,6 +5,9 @@ import Foundation
 import Tiktoken
 
 public struct ChatGPTModel: Identifiable, Equatable, Codable {
+	
+	public typealias Bound = Int
+	
 	private static var counter: Tiktoken?
 	private let baseTokenCostDivisor: Double
 	

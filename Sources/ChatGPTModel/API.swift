@@ -147,16 +147,27 @@ public struct ChatCompletion {
 		/// A list of chat completion choices.
 		public let choices: [Choice]
 		
+		/// Usage statistics for the completion request.
+		public let usage: Usage
+		
 		public enum CodingKeys: String, CodingKey {
-			case id, object, created, model, choices
+			case id, object, created, model, choices, usage
 		}
 		
-		public init(id: String, object: String, created: Int, model: String, choices: [Choice]) {
+		public init(
+			id: String,
+			object: String,
+			created: Int,
+			model: String,
+			choices: [Choice], 
+			usage: Usage
+		) {
 			self.id = id
 			self.object = object
 			self.created = created
 			self.model = model
 			self.choices = choices
+			self.usage = usage
 		}
 		
 		/// Represents a choice in the list of chat completion choices.
@@ -171,45 +182,40 @@ public struct ChatCompletion {
 			/// The reason the model stopped generating tokens.
 			public let finishReason: String
 			
-			/// Usage statistics for the completion request.
-			public let usage: Usage
-			
 			public enum CodingKeys: String, CodingKey {
 				case index, message
 				case finishReason = "finish_reason"
-				case usage
 			}
 			
-			public init(index: Int, message: Message, finishReason: String, usage: Usage) {
+			public init(index: Int, message: Message, finishReason: String) {
 				self.index = index
 				self.message = message
 				self.finishReason = finishReason
-				self.usage = usage
+			}
+		}
+		
+		/// Represents usage statistics for the completion request.
+		public struct Usage: Codable {
+			
+			/// Number of tokens in the prompt.
+			public let promptTokens: Int
+			
+			/// Number of tokens in the generated completion.
+			public let completionTokens: Int
+			
+			/// Total number of tokens used in the request.
+			public let totalTokens: Int
+			
+			public enum CodingKeys: String, CodingKey {
+				case promptTokens = "prompt_tokens"
+				case completionTokens = "completion_tokens"
+				case totalTokens = "total_tokens"
 			}
 			
-			/// Represents usage statistics for the completion request.
-			public struct Usage: Codable {
-				
-				/// Number of tokens in the prompt.
-				public let promptTokens: Int
-				
-				/// Number of tokens in the generated completion.
-				public let completionTokens: Int
-				
-				/// Total number of tokens used in the request.
-				public let totalTokens: Int
-				
-				public enum CodingKeys: String, CodingKey {
-					case promptTokens = "prompt_tokens"
-					case completionTokens = "completion_tokens"
-					case totalTokens = "total_tokens"
-				}
-				
-				public init(promptTokens: Int, completionTokens: Int, totalTokens: Int) {
-					self.promptTokens = promptTokens
-					self.completionTokens = completionTokens
-					self.totalTokens = totalTokens
-				}
+			public init(promptTokens: Int, completionTokens: Int, totalTokens: Int) {
+				self.promptTokens = promptTokens
+				self.completionTokens = completionTokens
+				self.totalTokens = totalTokens
 			}
 		}
 	}
