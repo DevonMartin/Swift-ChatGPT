@@ -12,7 +12,7 @@ final class ChatGPTModelTests: XCTestCase {
 			.init(.gpt_4_32k)
 		]
 		
-		let messages: [OpenAiApiMessage] = [
+		let messages: [ChatCompletion.Message] = [
 			.init(role: .system, content: "Respond only \"test\""),
 			.init(role: .user, content: "Hello!")
 		]

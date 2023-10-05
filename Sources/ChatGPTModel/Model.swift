@@ -102,9 +102,9 @@ public struct ChatGPTModel: Identifiable, Codable {
 	// MARK: - API
 	
 	public func filterMessagesToFitBudget(
-		_ messages: [OpenAiApiMessage],
+		_ messages: [ChatCompletion.Message],
 		maxBudget: Double = .infinity
-	) async throws -> (messages: [OpenAiApiMessage], maxOutputTokens: Int?) {
+	) async throws -> (messages: [ChatCompletion.Message], maxOutputTokens: Int?) {
 		
 		guard !messages.isEmpty else { throw OpenAiApiError.emptyMessageArray }
 		
@@ -141,9 +141,9 @@ public struct ChatGPTModel: Identifiable, Codable {
 	}
 	
 	internal func filter(
-		_ messages: [OpenAiApiMessage],
+		_ messages: [ChatCompletion.Message],
 		budget: Int
-	) async throws -> (filteredMessages: [OpenAiApiMessage], tokenUsage: Int) {
+	) async throws -> (filteredMessages: [ChatCompletion.Message], tokenUsage: Int) {
 		// Ensure at least two messages in the response to avoid only sending a system message
 		let minimumMessages = min(2, messages.count)
 		
@@ -161,7 +161,7 @@ public struct ChatGPTModel: Identifiable, Codable {
 		return (filteredMessages, tokenUsage)
 	}
 	
-	private func calculateTokenUsage(from messages: [OpenAiApiMessage]) async -> Int {
+	private func calculateTokenUsage(from messages: [ChatCompletion.Message]) async -> Int {
 		var concatenatedMessages = ""
 		for message in messages {
 			let role = "role: " + message.role
