@@ -295,9 +295,9 @@ public struct ChatCompletion {
 	}
 	
 	public struct BadResponse: Codable {
-		public let error: Error
+		public let error: OpenAIError
 		
-		public struct Error: Codable, CustomStringConvertible {
+		public struct OpenAIError: Codable, CustomStringConvertible, Error {
 			public let type: String
 			public let code: String?
 			public let param: String?
