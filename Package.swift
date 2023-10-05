@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-	name: "ChatGPTModel",
+	name: "ChatGPT",
 	platforms: [
 		.iOS(.v17),
 		.macOS(.v14)
@@ -12,8 +12,8 @@ let package = Package(
 	products: [
 		// Products define the executables and libraries a package produces, making them visible to other packages.
 		.library(
-			name: "ChatGPTModel",
-			targets: ["ChatGPTModel"]),
+			name: "ChatGPT",
+			targets: ["ChatGPT"]),
 	],
 	dependencies: [
 		.package(url: "https://github.com/DevonMartin/Tiktoken.git", branch: "main"),
@@ -22,13 +22,13 @@ let package = Package(
 		// Targets are the basic building blocks of a package, defining a module or a test suite.
 		// Targets can depend on other targets in this package and products from dependencies.
 		.target(
-			name: "ChatGPTModel",
+			name: "ChatGPT",
 			dependencies: [
 				.product(name: "Tiktoken", package: "tiktoken"),
 			]
 		),
 		.testTarget(
-			name: "ChatGPTModelTests",
-			dependencies: ["ChatGPTModel"]),
+			name: "ChatGPTTests",
+			dependencies: ["ChatGPT"]),
 	]
 )

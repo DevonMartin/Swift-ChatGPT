@@ -1,7 +1,7 @@
 import XCTest
-@testable import ChatGPTModel
+@testable import ChatGPT
 
-final class ChatGPTModelTests: XCTestCase {
+final class ChatGPTTests: XCTestCase {
 	
 	private var testMessages: [ChatCompletion.Message] = [
 		.init(role: .system, content: "Respond only \"test\""),
@@ -36,6 +36,11 @@ final class ChatGPTModelTests: XCTestCase {
 			additionAmount *= 10
 		}
     }
+	
+	func testAvailableModels() async throws {
+		let models = try await AvailableModels.fetchChatCompletion(with: "")
+		models.forEach { print($0.id) }
+	}
 	
 	func testServerCompatibility() async throws {
 		struct AISandboxServerInput: Codable {
