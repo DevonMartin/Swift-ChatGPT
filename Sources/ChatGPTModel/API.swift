@@ -304,7 +304,11 @@ public struct ChatCompletion {
 			public let message: String
 			
 			public var description: String {
-				"Error from ChatGPT API of type \(type) with code \(code as Any): \(message)"
+				if let code {
+					"Error from OpenAI API of type \(type) with code \(code as Any): \(message)"
+				} else {
+					"Error from OpenAI API of type \(type): \(message)"
+				}
 			}
 		}
 	}
