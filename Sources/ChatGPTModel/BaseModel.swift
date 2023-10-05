@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ChatGPTBaseModel: Codable, Equatable {
+public struct ChatGPTBaseModel: Codable, Equatable, Hashable {
 	
 	public var id: String { base.id }
 	

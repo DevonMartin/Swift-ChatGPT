@@ -10,7 +10,7 @@ import Foundation
 public struct ChatCompletion {
 	
 	/// Creates a model response for the given chat conversation via `POST https://api.openai.com/v1/chat/completions` with an API key
-	/// in the `Authorization` parameter of the `header`.
+	/// in the `Bearer Authorization` parameter of the `header`.
 	public struct Request: Codable {
 		
 		/// ID of the model to use. See the

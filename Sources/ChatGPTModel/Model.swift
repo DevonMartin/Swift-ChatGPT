@@ -4,7 +4,7 @@
 import Foundation
 import Tiktoken
 
-public struct ChatGPTModel: Identifiable, Codable {
+public struct ChatGPTModel: Identifiable, Equatable, Codable {
 	private static var counter: Tiktoken?
 	private let baseTokenCostDivisor: Double
 	
