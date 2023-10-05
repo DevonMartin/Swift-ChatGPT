@@ -14,7 +14,7 @@ public struct ChatCompletion {
 	// ... (Other properties)
 	
 	/// The URL of the API endpoint for OpenAI's `Chat Completion`.
-	public let endpointURL = "https://api.openai.com/v1/chat/completions"
+	public static let endpointURL = "https://api.openai.com/v1/chat/completions"
 	
 	/// Creates a model response for the given chat conversation via `POST https://api.openai.com/v1/chat/completions` with an API key
 	/// in the `Bearer Authorization` parameter of the `header`.
