@@ -295,15 +295,15 @@ public struct ChatCompletion {
 	}
 	
 	public struct BadResponse: Codable {
-		let error: Error
+		public let error: Error
 		
-		struct Error: Codable, CustomStringConvertible {
-			let type: String
-			let code: String?
-			let param: String?
-			let message: String
+		public struct Error: Codable, CustomStringConvertible {
+			public let type: String
+			public let code: String?
+			public let param: String?
+			public let message: String
 			
-			var description: String {
+			public var description: String {
 				"Error from ChatGPT API of type \(type) with code \(code as Any): \(message)"
 			}
 		}
