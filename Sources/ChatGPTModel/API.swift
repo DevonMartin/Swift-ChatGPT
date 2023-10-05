@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  API.swift
+//
 //
 //  Created by Devon Martin on 10/3/23.
 //
@@ -290,6 +290,21 @@ public struct ChatCompletion {
 					self.role = role
 					self.content = content
 				}
+			}
+		}
+	}
+	
+	public struct BadResponse: Codable {
+		let error: Error
+		
+		struct Error: Codable, CustomStringConvertible {
+			let type: String
+			let code: String?
+			let param: String?
+			let message: String
+			
+			var description: String {
+				"Error from ChatGPT API of type \(type) with code \(code as Any): \(message)"
 			}
 		}
 	}
