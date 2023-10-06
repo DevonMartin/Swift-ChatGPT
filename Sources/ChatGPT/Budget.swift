@@ -7,7 +7,9 @@
 
 import Foundation
 
+#if !SERVER
 @Observable
+#endif
 public class ChatGPTBudget: Codable {
 	public var input: Double { didSet { save() } }
 	public var output: Double { didSet { save() } }
