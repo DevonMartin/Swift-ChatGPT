@@ -98,14 +98,18 @@ extension Models {
 	///
 	/// - Parameter apiKey: An API key for authenticating with OpenAI's API, obtainable at
 	/// [OpenAI's website](https://platform.openai.com/account/api-keys).
+	///	- Parameter priceAdjustmentFactor: The factor to multiply the cost of tokens by, to impact how quickly budgets are used up. Defaults to 1, meaninng tokens are priced exactly as OpenAI charges.
 	/// - Returns: An array of `ChatGPTModel` objects representing the accessible GPT models.
 	/// - Throws: An error if the request fails.
-	public static func fetchChatCompletion(with apiKey: String) async throws -> [ChatGPTModel] {
+	public static func fetchChatCompletion(
+		with apiKey: String,
+		priceAdjustmentFactor: Double = 1
+	) async throws -> [ChatGPTModel] {
 		try await fetchAll(with: apiKey).filter {
 			$0.id.contains("gpt") &&
 			!$0.id.contains("instruct")
 		}.map {
-			ChatGPTModel(id: $0.id)
+			ChatGPTModel(id: $0.id, priceAdjustmentFactor: priceAdjustmentFactor)
 		}
 	}
 	

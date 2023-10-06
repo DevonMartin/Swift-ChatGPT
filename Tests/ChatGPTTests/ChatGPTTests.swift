@@ -38,8 +38,8 @@ final class ChatGPTTests: XCTestCase {
     }
 	
 	func testAvailableModels() async throws {
-		let models = try await Models.fetchChatCompletion(with: "") // MARK: Add API key & delete after test.
-		models.forEach { print($0.id) }
+		let models = try await Models.fetchChatCompletion(with: "", priceAdjustmentFactor: 2) // MARK: Add API key & delete after test.
+		models.forEach { print($0.priceAdjustmentFactor) }
 	}
 	
 	func testServerCompatibility() async throws {
