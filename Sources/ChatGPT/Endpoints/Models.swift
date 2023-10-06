@@ -9,52 +9,49 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
-
+	
+	
 /// Represents data and operations for fetching a list of GPT models accessible via a given API key.
-public struct AvailableModels {
+public struct Models: Codable {
 	
 	/// API endpoint URL for fetching available GPT models.
 	private static let endpointURL = "https://api.openai.com/v1/models"
 	
-	/// Encapsulates the response data for available GPT models.
-	public struct Models: Codable {
+	/// An array of available GPT models.
+	public let data: [Model]?
+	
+	/// Represents a single GPT model.
+	public struct Model: Codable {
 		
-		/// An array of available GPT models.
-		public let data: [Model]?
+		/// Unique identifier for the model.
+		public let id: String
 		
-		/// Represents a single GPT model.
-		public struct Model: Codable {
+		/// Timestamp for model creation.
+		public let created: Int
 		
-			/// Unique identifier for the model.
-			public let id: String
-			
-			/// Timestamp for model creation.
-			public let created: Int
-			
-			/// Ownership information for the model.
-			public let ownedBy: OwnedBy
-			
-			/// Root identifier for the model.
-			public let root: String
-			
-			private enum CodingKeys: String, CodingKey {
-				case id, created
-				case ownedBy = "owned_by"
-				case root
-			}
-			
-			/// Enumerates possible owners of a GPT model.
-			public enum OwnedBy: String, Codable {
-				case openai = "openai"
-				case openaiDev = "openai-dev"
-				case openaiInternal = "openai-internal"
-				case system = "system"
-			}
+		/// Ownership information for the model.
+		public let ownedBy: OwnedBy
+		
+		/// Root identifier for the model.
+		public let root: String
+		
+		private enum CodingKeys: String, CodingKey {
+			case id, created
+			case ownedBy = "owned_by"
+			case root
+		}
+		
+		/// Enumerates possible owners of a GPT model.
+		public enum OwnedBy: String, Codable {
+			case openai = "openai"
+			case openaiDev = "openai-dev"
+			case openaiInternal = "openai-internal"
+			case system = "system"
 		}
 	}
 }
 
-extension AvailableModels {
+extension Models {
 	
 	/// Fetches the list of available GPT models using the provided API key.
 	///
@@ -62,7 +59,7 @@ extension AvailableModels {
 	/// [OpenAI's website](https://platform.openai.com/account/api-keys).
 	/// - Returns: An array of `Model` objects representing the accessible GPT models.
 	/// - Throws: An error if the request fails.
-	public static func fetchAll(with apiKey: String) async throws -> [Models.Model] {
+	public static func fetchAll(with apiKey: String) async throws -> [Model] {
 		return try await withCheckedThrowingContinuation { continuation in
 			var request = URLRequest(url: URL(string: endpointURL)!)
 			request.httpMethod = "GET"

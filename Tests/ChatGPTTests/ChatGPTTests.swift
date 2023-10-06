@@ -38,7 +38,7 @@ final class ChatGPTTests: XCTestCase {
     }
 	
 	func testAvailableModels() async throws {
-		let models = try await AvailableModels.fetchChatCompletion(with: "")
+		let models = try await Models.fetchChatCompletion(with: "") // MARK: Add API key & delete after test.
 		models.forEach { print($0.id) }
 	}
 	
