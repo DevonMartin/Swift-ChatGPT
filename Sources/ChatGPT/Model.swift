@@ -71,7 +71,11 @@ public struct ChatGPTModel: Identifiable, Equatable, Codable {
 	
 	// MARK: - Initializer
 	
-	public init(_ base: ChatGPTBaseModel, priceAdjustmentFactor: Double = 1, dateSuffix: String? = nil) {
+	public init(
+		_ base: ChatGPTBaseModel,
+		priceAdjustmentFactor: Double = 1,
+		dateSuffix: String? = nil
+	) {
 		if Self.counter == nil { Task { Self.counter = await .init() } }
 		
 		baseTokenCostDivisor = 1000
@@ -116,7 +120,7 @@ public struct ChatGPTModel: Identifiable, Equatable, Codable {
 		
 		// Calculate maximum output tokens
 		var maxOutputTokens: Int? = min(tokens.max - tokenUsage, affordableOutputTokens)
-		maxOutputTokens = maxOutputTokens! > 0 ? maxOutputTokens : nil
+		if maxOutputTokens! <= 0 { maxOutputTokens = nil }
 		
 		return (messages: filteredMessages, maxOutputTokens: maxOutputTokens)
 	}
