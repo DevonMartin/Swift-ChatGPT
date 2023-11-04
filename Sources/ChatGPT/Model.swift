@@ -122,6 +122,14 @@ public struct ChatGPTModel: Identifiable, Equatable, Codable {
 		
 		return (messages: filteredMessages, maxOutputTokens: maxOutputTokens)
 	}
+    
+    public func countTokens(for messages: [ChatCompletion.Message]) async -> Int {
+        await calculateTokenUsage(from: messages)
+    }
+    
+    public func countTokens(for message: ChatCompletion.Message) async -> Int {
+        await calculateTokenUsage(from: [message])
+    }
 	
 	// MARK: - Helper Functions -
 	
