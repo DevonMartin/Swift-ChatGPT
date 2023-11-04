@@ -37,9 +37,15 @@ final class ChatGPTTests: XCTestCase {
 		}
     }
 	
+	// MARK: - Add API key & delete after test. -
+	
 	func testAvailableModels() async throws {
-		let models = try await Models.fetchChatCompletion(with: "", priceAdjustmentFactor: 2) // MARK: Add API key & delete after test.
-		models.forEach { print($0.priceAdjustmentFactor) }
+		let models = try await Models.fetchChatCompletion(
+			with: "",
+			priceAdjustmentFactor: 2
+		)
+		
+		models.sorted(by: { $0.name < $1.name }).forEach { print($0.name) }
 	}
 	
 	func testServerCompatibility() async throws {
@@ -47,25 +53,26 @@ final class ChatGPTTests: XCTestCase {
 			let messages: [ChatCompletion.Message]
 			let model: ChatGPTModel
 			let temperature: Double
-			let userID: String
+			let user: String
 		}
 		
 		struct AISandboxServerOutput: Codable {
-			var message: ChatCompletion.Message? = nil
-			var cost: Double? = nil
+			var message: ChatCompletion.Message
+			var cost: Double
 			var newBalance: Double? = nil
 		}
 		
 		print("")
 		
-		let model = ChatGPTModel(.gpt_3)
+		let model = ChatGPTModel(.gpt_3, priceAdjustmentFactor: 1)
+		
 		let userID = "sampleUserID1"
 		
 		let input = AISandboxServerInput(
 			messages: testMessages,
 			model: model,
 			temperature: 0.75,
-			userID: userID
+			user: userID
 		)
 		
 		let url = URL(string: "http://127.0.0.1:8080/api/chatCompletion")!
@@ -80,22 +87,27 @@ final class ChatGPTTests: XCTestCase {
 		
 		let httpResponse = response as! HTTPURLResponse
 		
-		// 402 means "Payment Required", and is thrown when the server is unable to shorten the provided request
-		// to an acceptable length.
+		// 402 means "Payment Required", and is thrown when the server is unable to shorten the 
+		// provided request to an acceptable length.
 		if httpResponse.statusCode == 402 {
-			print("You don't have enough credits to send that message! Purchase more from the shop, or shorten your message.")
+			print("""
+You don't have enough credits to send that message! Purchase more from the shop, or shorten your \
+message.
+""")
 		}
 		
 		do {
 			let output = try JSONDecoder().decode(AISandboxServerOutput.self, from: data)
-			print(output)
+			print(String(format: "%.6f", output.cost))
 		} catch {
-			print("We had a problem processing the response from the server. Please try again.")
+			print("We had a problem processing the response from the server. \(error)")
 			let output = try JSONDecoder().decode(
 				ChatCompletion.BadResponse.OpenAIError.self,
 				from: data
 			)
 			print(output)
 		}
+		
+		print("")
 	}
 }

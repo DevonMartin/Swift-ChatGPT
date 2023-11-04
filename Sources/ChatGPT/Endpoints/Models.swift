@@ -26,19 +26,20 @@ public struct Models: Codable {
 		/// Unique identifier for the model.
 		public let id: String
 		
+		/// String representation of the type of object this model represents. Should always be "model."
+		public let objectType: String
+		
 		/// Timestamp for model creation.
 		public let created: Int
 		
 		/// Ownership information for the model.
 		public let ownedBy: OwnedBy
 		
-		/// Root identifier for the model.
-		public let root: String
-		
 		private enum CodingKeys: String, CodingKey {
-			case id, created
+			case id
+			case objectType = "object"
+			case created
 			case ownedBy = "owned_by"
-			case root
 		}
 		
 		/// Enumerates possible owners of a GPT model.

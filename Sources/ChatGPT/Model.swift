@@ -6,12 +6,10 @@ import Tiktoken
 
 public struct ChatGPTModel: Identifiable, Equatable, Codable {
 	
-	public typealias Bound = Int
-	
 	private static var counter: Tiktoken?
 	private let baseTokenCostDivisor: Double
 	
-	// MARK: - Properties
+	// MARK: - Properties -
 	
 	public let base: ChatGPTBaseModel
 	public let priceAdjustmentFactor: Double
@@ -69,7 +67,7 @@ public struct ChatGPTModel: Identifiable, Equatable, Codable {
 		return formattedName
 	}
 	
-	// MARK: - Initializer
+	// MARK: - Initializer -
 	
 	public init(
 		_ base: ChatGPTBaseModel,
@@ -106,7 +104,7 @@ public struct ChatGPTModel: Identifiable, Equatable, Codable {
 		self.init(base, priceAdjustmentFactor: priceAdjustmentFactor, dateSuffix: dateSuffix)
 	}
 	
-	// MARK: - API
+	// MARK: - API -
 	
 	public func filterMessagesToFitBudget(
 		_ messages: [ChatCompletion.Message],
@@ -125,7 +123,7 @@ public struct ChatGPTModel: Identifiable, Equatable, Codable {
 		return (messages: filteredMessages, maxOutputTokens: maxOutputTokens)
 	}
 	
-	// MARK: - Helper Functions
+	// MARK: - Helper Functions -
 	
 	private func getTokenBudgets(
 		_ maxBudget: Double
