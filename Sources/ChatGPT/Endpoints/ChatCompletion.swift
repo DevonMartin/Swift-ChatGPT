@@ -26,6 +26,11 @@ public struct ChatCompletion {
 		/// A list of messages comprising the conversation so far.
 		public let messages: [Message]
 		
+		/// This feature is in Beta. If specified, our system will make a best effort to sample deterministically, such that repeated
+		/// requests with the same `seed` and parameters should return the same result. Determinism is not guaranteed, and you
+		/// should refer to the `systemFingerprint` response parameter to monitor changes in the backend.
+		public let seed: Int?
+		
 		/// What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will 
 		/// make it more focused and deterministic.
 		///
@@ -68,23 +73,20 @@ public struct ChatCompletion {
 		public let user: String?
 		
 		private enum CodingKeys: String, CodingKey {
-			case model
-			case messages
-			case temperature
+			case model, messages, seed, temperature
 			case topP = "top_p"
-			case n
-			case stream
-			case stop
+			case n, stream, stop
 			case maxTokens = "max_tokens"
 			case presencePenalty = "presence_penalty"
 			case frequencyPenalty = "frequency_penalty"
 			case user
 		}
 		
-		// Initialize with temperature
+		/// Initialize with temperature
 		public init(
 			model: String,
 			messages: [Message],
+			seed: Int? = nil,
 			temperature: Double? = nil,
 			n: Double? = nil,
 			stream: Bool? = nil,
@@ -96,6 +98,7 @@ public struct ChatCompletion {
 		) {
 			self.model = model
 			self.messages = messages
+			self.seed = seed
 			self.temperature = temperature
 			self.topP = nil
 			self.n = n
@@ -107,10 +110,11 @@ public struct ChatCompletion {
 			self.user = user
 		}
 		
-		// Initialize with topP
+		/// Initialize with topP
 		public init(
 			model: String,
 			messages: [Message],
+			seed: Int? = nil,
 			topP: Double? = nil,
 			n: Double? = nil,
 			stream: Bool? = nil,
@@ -122,6 +126,7 @@ public struct ChatCompletion {
 		) {
 			self.model = model
 			self.messages = messages
+			self.seed = seed
 			self.temperature = nil
 			self.topP = topP
 			self.n = n
@@ -155,8 +160,15 @@ public struct ChatCompletion {
 		/// Usage statistics for the completion request.
 		public let usage: Usage
 		
+		/// This fingerprint represents the backend configuration that the model runs with.
+		///
+		/// Can be used in conjunction with the `seed` request parameter to understand when backend changes have been made
+		/// that might impact determinism.
+		public let systemFingerprint: String
+		
 		private enum CodingKeys: String, CodingKey {
 			case id, object, created, model, choices, usage
+			case systemFingerprint = "system_fingerprint"
 		}
 		
 		/// Represents a choice in the list of chat completion choices.

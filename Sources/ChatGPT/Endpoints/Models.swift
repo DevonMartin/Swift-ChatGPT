@@ -108,10 +108,9 @@ extension Models {
 	) async throws -> [ChatGPTModel] {
 		try await fetchAll(with: apiKey).filter {
 			$0.id.contains("gpt") &&
-			!$0.id.contains("instruct")
-		}.map {
-			ChatGPTModel(id: $0.id, priceAdjustmentFactor: priceAdjustmentFactor)
-		}
+			$0.id.contains("1106") &&
+			!$0.id.contains("vision")
+		}.map { ChatGPTModel(id: $0.id, priceAdjustmentFactor: priceAdjustmentFactor) }
 	}
 	
 	enum AvailableModelsError: Error {

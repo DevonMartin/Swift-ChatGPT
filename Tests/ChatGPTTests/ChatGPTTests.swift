@@ -13,9 +13,7 @@ final class ChatGPTTests: XCTestCase {
 
 		let models: [ChatGPTModel] = [
 			.init(.gpt_3),
-			.init(.gpt_3_16k),
 			.init(.gpt_4),
-			.init(.gpt_4_32k)
 		]
 		
 		var additionAmount = 0.00001
@@ -30,7 +28,7 @@ final class ChatGPTTests: XCTestCase {
 				let (filteredMessages, maxOutputTokens) = results
 				
 				XCTAssert(filteredMessages.count == 2)
-				XCTAssert(maxOutputTokens == nil || maxOutputTokens! < model.tokens.max)
+				XCTAssert(maxOutputTokens == nil || maxOutputTokens! < model.tokens.max.output)
 			}
 			
 			additionAmount *= 10
@@ -45,7 +43,7 @@ final class ChatGPTTests: XCTestCase {
 			priceAdjustmentFactor: 2
 		)
 		
-		models.sorted(by: { $0.name < $1.name }).forEach { print($0.name) }
+		models.sorted(by: { $0.name < $1.name }).forEach { print("\($0.name) has an ID of: \($0.id).") }
 	}
 	
 	func testServerCompatibility() async throws {

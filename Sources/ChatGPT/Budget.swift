@@ -22,16 +22,11 @@ public class ChatGPTBudget: Codable {
 		self.output = output
 	}
 	
-	private static let gpt3Key = "ChatGPTModel.Budget.3"
-	private static let gpt16Key = "ChatGPTModel.Budget.16k"
-	private static let gpt4Key = "ChatGPTModel.Budget.4"
-	private static let gpt32Key = "ChatGPTModel.Budget.32k"
-	
 	static let gpt3 = get(from: gpt3Key) ?? .init(key: gpt3Key, input: 0.002, output: 0.005)
-	static let gpt16k = get(from: gpt16Key) ?? .init(key: gpt16Key, input: 0.015, output: 0.045)
 	static let gpt4 = get(from: gpt4Key) ?? .init(key: gpt4Key, input: 0.05, output: 0.1)
-	static let gpt32k = get(from: gpt32Key) ?? .init(key: gpt32Key, input: 0.3, output: 0.7)
 	
+	private static let gpt3Key = "ChatGPTModel.Budget.3"
+	private static let gpt4Key = "ChatGPTModel.Budget.4"
 	
 	private static func get(from key: String) -> ChatGPTBudget? {
 		guard let data = UserDefaults.standard.data(forKey: key) else { return nil }
@@ -46,8 +41,10 @@ public class ChatGPTBudget: Codable {
 			let components = key.split(separator: "-")
 			let model = components.last ?? "unknown"
 			print("""
+
 Failed to save budget data for base model: \(model)
 Error: \(error.localizedDescription)
+
 """)
 		}
 	}

@@ -13,11 +13,10 @@ public struct ChatGPTModel: Identifiable, Equatable, Codable {
 	
 	public let base: ChatGPTBaseModel
 	public let priceAdjustmentFactor: Double
-	public let dateSuffix: String?
 	public var budget: ChatGPTBudget { base.budget }
 	
 	public var tokens: (
-		max: Int,
+		max: (input: Int, output: Int),
 		cost: (input: Double, output: Double),
 		maxCost: (input: Double, output: Double)
 	) {
@@ -32,21 +31,19 @@ public struct ChatGPTModel: Identifiable, Equatable, Codable {
 		return (
 			max: max,
 			cost: cost,
-			maxCost: (input: cost.input * Double(max), output: cost.output * Double(max))
+			maxCost: (input: cost.input * Double(max.input), output: cost.output * Double(max.output))
 		)
 	}
 	
 	/// A unique identifier for the ChatGPT Model that the OpenAI API will accept.
-	public var id: String {
-		if let dateSuffix { base.id + "-" + dateSuffix }
-		else { base.id }
-	}
+	public var id: String { base.id }
 	
 	/// A properly-capitalized name of the ChatGPT Model.
 	public var name: String {
 		let components = self.id.components(separatedBy: "-")
-		let capitalizedComponents = components.map { component in
+		let capitalizedComponents = components.compactMap { component in
 			if component == "gpt" { return "GPT" }
+			if ["1106", "preview"].contains(component) { return nil }
 			if let firstCharacter = component.first, firstCharacter.isLetter {
 				return component.capitalized
 			} else {
@@ -71,8 +68,7 @@ public struct ChatGPTModel: Identifiable, Equatable, Codable {
 	
 	public init(
 		_ base: ChatGPTBaseModel,
-		priceAdjustmentFactor: Double = 1,
-		dateSuffix: String? = nil
+		priceAdjustmentFactor: Double = 1
 	) {
 		if Self.counter == nil { Task { Self.counter = await .init() } }
 		
@@ -80,28 +76,11 @@ public struct ChatGPTModel: Identifiable, Equatable, Codable {
 		
 		self.base = base
 		self.priceAdjustmentFactor = priceAdjustmentFactor
-		self.dateSuffix = dateSuffix
 	}
 	
 	public init(id: String, priceAdjustmentFactor: Double = 1) {
-		var id = id.lowercased()
-		var dateSuffix: String?
-		
-		var components = id.components(separatedBy: "-")
-		
-		if let last = components.last,
-		   let (number, _) = Date.parse(string: last) {
-			
-			dateSuffix = number
-			let _ = components.removeLast()
-			id = components.map {$0}.joined(separator: "-")
-		}
-		
-		guard let base = ChatGPTBaseModel.get(from: id) else {
-			fatalError("Unable to parse provided ID and find a valid GPT model.")
-		}
-		
-		self.init(base, priceAdjustmentFactor: priceAdjustmentFactor, dateSuffix: dateSuffix)
+		let base = ChatGPTBaseModel.get(from: id.lowercased()) ?? .gpt_3
+		self.init(base, priceAdjustmentFactor: priceAdjustmentFactor)
 	}
 	
 	// MARK: - API -
@@ -114,10 +93,10 @@ public struct ChatGPTModel: Identifiable, Equatable, Codable {
 		guard !messages.isEmpty else { throw OpenAiApiError.emptyMessageArray }
 		
 		let (inputTokenBudget, affordableOutputTokens) = getTokenBudgets(maxBudget)
-		let (filteredMessages, tokenUsage) = try await filter(messages, budget: inputTokenBudget)
+		let (filteredMessages, _) = try await filter(messages, budget: inputTokenBudget)
 		
 		// Calculate maximum output tokens
-		var maxOutputTokens: Int? = min(tokens.max - tokenUsage, affordableOutputTokens)
+		var maxOutputTokens: Int? = min(tokens.max.output, affordableOutputTokens)
 		if maxOutputTokens! <= 0 { maxOutputTokens = nil }
 		
 		return (messages: filteredMessages, maxOutputTokens: maxOutputTokens)
