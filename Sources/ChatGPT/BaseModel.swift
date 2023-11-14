@@ -57,7 +57,7 @@ fileprivate enum ChatGPTBaseModelEnum: String, CaseIterable, Codable {
 	fileprivate var id: String { self.rawValue }
 	
 	fileprivate var tokens: (max: (input: Int, output: Int), cost: (input: Double, output: Double)) {
-		switch self {
+		switch self { // Updated to reflect changed prices from ~11/7/23
 			case .gpt3:   (max: (input: 12288, output: 4096),  cost: (input: 0.001, output: 0.002))
 			case .gpt4:   (max: (input: 123904, output: 4096),  cost: (input: 0.01,   output: 0.03))
 		}
