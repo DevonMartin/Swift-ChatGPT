@@ -26,29 +26,8 @@ public struct Models: Codable {
 		/// Unique identifier for the model.
 		public let id: String
 		
-		/// String representation of the type of object this model represents. Should always be "model."
-		public let objectType: String
-		
 		/// Timestamp for model creation.
 		public let created: Int
-		
-		/// Ownership information for the model.
-		public let ownedBy: OwnedBy
-		
-		private enum CodingKeys: String, CodingKey {
-			case id
-			case objectType = "object"
-			case created
-			case ownedBy = "owned_by"
-		}
-		
-		/// Enumerates possible owners of a GPT model.
-		public enum OwnedBy: String, Codable {
-			case openai = "openai"
-			case openaiDev = "openai-dev"
-			case openaiInternal = "openai-internal"
-			case system = "system"
-		}
 	}
 }
 
@@ -61,15 +40,19 @@ extension Models {
 	/// - Returns: An array of `Model` objects representing the accessible GPT models.
 	/// - Throws: An error if the request fails.
 	public static func fetchAll(with apiKey: String) async throws -> [Model] {
+		guard let url = URL(string: endpointURL) else {
+			throw AvailableModelsError.invalidURL
+		}
+		
 		return try await withCheckedThrowingContinuation { continuation in
-			var request = URLRequest(url: URL(string: endpointURL)!)
+			var request = URLRequest(url: url)
 			request.httpMethod = "GET"
 			request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
 			
 			URLSession.shared.dataTask(with: request) { data, response, error in
-				guard error == nil else { 
-					print("\nError is not null: \(error!)\n")
-					continuation.resume(throwing: error!)
+				if let error {
+					print("\nError is not null: \(error)\n")
+					continuation.resume(throwing: error)
 					return
 				}
 				
@@ -106,20 +89,40 @@ extension Models {
 		with apiKey: String,
 		priceAdjustmentFactor: Double = 1
 	) async throws -> [ChatGPTModel] {
-		try await fetchAll(with: apiKey).filter {
-			$0.id.contains("gpt") &&
-			$0.id.contains("1106") &&
-			!$0.id.contains("vision")
-		}.map { ChatGPTModel(id: $0.id, priceAdjustmentFactor: priceAdjustmentFactor) }
+		
+		let preferredModelIDs: Set<String> = [
+			"gpt-4o",
+			"gpt-4.5-preview",
+			"gpt-4-turbo",
+			"gpt-4",
+			"gpt-4.1",
+			"o1",
+			"gpt-4o-mini",
+			"gpt-4.1-mini",
+			"gpt-4.1-nano",
+			"o4-mini",
+			"gpt-3.5-turbo"
+		]
+		
+		let allAvailableModels = try await fetchAll(with: apiKey)
+		
+		let curatedModels = allAvailableModels.filter { preferredModelIDs.contains($0.id) }
+		
+		return curatedModels.map {
+			ChatGPTModel(id: $0.id, priceAdjustmentFactor: priceAdjustmentFactor)
+		}
 	}
 	
 	enum AvailableModelsError: Error {
 		case badKey
+		case invalidURL
 		
 		var description: String {
 			switch self {
-				case .badKey:
-					"Your API key didn't return any results. It is invalid."
+			case .badKey:
+				"Your API key didn't return any results. It is invalid."
+			case .invalidURL:
+				"The URL used to fetch the list of available models is invalid."
 			}
 		}
 	}

@@ -17,21 +17,24 @@ public struct ChatGPTModel: Codable, Identifiable, Equatable, Hashable {
 	
 	public var tokens: (
 		max: (input: Int, output: Int),
-		cost: (input: Double, output: Double),
+		costPerToken: (input: Double, output: Double),
 		maxCost: (input: Double, output: Double)
 	) {
 		let max = base.tokens.max
-		let baseCost = base.tokens.cost
+		let baseCostPer1K = base.tokens.cost
 		
-		let cost: (input: Double, output: Double) = (
-			input: baseCost.input / baseTokenCostDivisor * priceAdjustmentFactor,
-			output: baseCost.output / baseTokenCostDivisor * priceAdjustmentFactor
+		let costPerToken: (input: Double, output: Double) = (
+			input: baseCostPer1K.input / baseTokenCostDivisor * priceAdjustmentFactor,
+			output: baseCostPer1K.output / baseTokenCostDivisor * priceAdjustmentFactor
 		)
 		
 		return (
 			max: max,
-			cost: cost,
-			maxCost: (input: cost.input * Double(max.input), output: cost.output * Double(max.output))
+			costPerToken: costPerToken,
+			maxCost: (
+				input: costPerToken.input * Double(max.input),
+				output: costPerToken.output * Double(max.output)
+			)
 		)
 	}
 	
@@ -43,25 +46,30 @@ public struct ChatGPTModel: Codable, Identifiable, Equatable, Hashable {
 		let components = self.id.components(separatedBy: "-")
 		let capitalizedComponents = components.compactMap { component in
 			if component == "gpt" { return "GPT" }
-			if ["1106", "preview"].contains(component) { return nil }
-			if let firstCharacter = component.first, firstCharacter.isLetter {
-				return component.capitalized
-			} else {
-				return component
-			}
-		}
-		var formattedName = capitalizedComponents.joined(separator: "-")
-		formattedName = formattedName.replacingOccurrences(of: "GPT-3.5-Turbo", with: "GPT-3")
-		
-		if let last = capitalizedComponents.last,
-		   let (modelDateNumber, dateString) = Date.parse(string: last) {
-			formattedName = formattedName.replacingOccurrences(
-				of: "-\(modelDateNumber)",
-				with: " \(dateString) version"
-			)
+			else if ["o1", "o4", "mini", "nano"].contains(component) { return component }
+			else if let first = component.first, first.isLetter { return component.capitalized }
+			else { return component }
 		}
 		
-		return formattedName
+		return capitalizedComponents
+			.joined(separator: "-")
+			.replacingOccurrences(of: "GPT-3.5-Turbo", with: "GPT-3")
+		
+		// Models with dates in their names are no longer used.
+		// Uncomment the below code if this changes.
+		
+//		var formattedName = capitalizedComponents.joined(separator: "-")
+//		formattedName = formattedName.replacingOccurrences(of: "GPT-3.5-Turbo", with: "GPT-3")
+//
+//		if let last = capitalizedComponents.last,
+//		   let (modelDateNumber, dateString) = Date.parse(string: last) {
+//			formattedName = formattedName.replacingOccurrences(
+//				of: "-\(modelDateNumber)",
+//				with: " \(dateString) version"
+//			)
+//		}
+//		
+//		return formattedName
 	}
 	
 	// MARK: - Initializer -
@@ -79,7 +87,7 @@ public struct ChatGPTModel: Codable, Identifiable, Equatable, Hashable {
 	}
 	
 	public init(id: String, priceAdjustmentFactor: Double = 1) {
-		let base = ChatGPTBaseModel.get(from: id.lowercased()) ?? .gpt_3
+		let base = ChatGPTBaseModel.get(from: id.lowercased()) ?? .gpt35Turbo
 		self.init(base, priceAdjustmentFactor: priceAdjustmentFactor)
 	}
 	
@@ -126,8 +134,8 @@ public struct ChatGPTModel: Codable, Identifiable, Equatable, Hashable {
 		: designatedInputBudget
 		
 		// Your max tokens can be calculated by your budget divided by the cost of each token.
-		let inputTokenBudget = Int(floor(inputBudget / tokens.cost.input))
-		let affordableOutputTokens = Int(floor(affordableOutputCost / tokens.cost.output))
+		let inputTokenBudget = Int(floor(inputBudget / tokens.costPerToken.input))
+		let affordableOutputTokens = Int(floor(affordableOutputCost / tokens.costPerToken.output))
 		
 		return (inputTokenBudget, affordableOutputTokens)
 	}
