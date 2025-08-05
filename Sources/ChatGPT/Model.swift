@@ -162,20 +162,18 @@ public struct ChatGPTModel: Codable, Identifiable, Equatable, Hashable {
 	}
 	
 	private func calculateTokenUsage(from messages: [ChatCompletion.Message]) async -> Int {
-		var concatenatedMessages = ""
-		for message in messages {
-			let role = "role: " + message.role
-			let content = "content: " + message.content
-			
-			concatenatedMessages += "\(role) \(content)"
-		}
-		
 		if Self.counter == nil {
-			Self.counter = await .init()
+			Self.counter = await .init()  // Lazy load
 		}
-		
-		let count = Self.counter!.count(concatenatedMessages)
-		return count
+		let counter = Self.counter!
+		var total = 0
+		for message in messages {
+			let roleTokens = counter.count(message.role)
+			let contentTokens = counter.count(message.content)
+			total += roleTokens + contentTokens + 4  // Overhead: 4 tokens per message (role/content delimiters)
+		}
+		total += 3  // Final assistant priming
+		return total
 	}
 }
 

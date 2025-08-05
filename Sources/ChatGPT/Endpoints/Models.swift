@@ -9,8 +9,8 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
-	
-	
+
+
 /// Represents data and operations for fetching a list of GPT models accessible via a given API key.
 public struct Models: Codable {
 	
@@ -44,33 +44,34 @@ extension Models {
 			throw AvailableModelsError.invalidURL
 		}
 		
+		var request = URLRequest(url: url)
+		request.httpMethod = "GET"
+		request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+		
 		return try await withCheckedThrowingContinuation { continuation in
-			var request = URLRequest(url: url)
-			request.httpMethod = "GET"
-			request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-			
 			URLSession.shared.dataTask(with: request) { data, response, error in
 				if let error {
-					print("\nError is not null: \(error)\n")
 					continuation.resume(throwing: error)
 					return
 				}
 				
-				guard let data else {
-					print("\nData is null.\n")
-					continuation.resume(throwing: AvailableModelsError.badKey)
+				guard let httpResponse = response as? HTTPURLResponse else {
+					continuation.resume(throwing: AvailableModelsError.networkFailure)
+					return
+				}
+				
+				guard httpResponse.statusCode == 200, let data else {
+					if httpResponse.statusCode == 401 {
+						continuation.resume(throwing: AvailableModelsError.badKey)
+					} else {
+						continuation.resume(throwing: AvailableModelsError.badResponse(status: httpResponse.statusCode))
+					}
 					return
 				}
 				
 				do {
 					let decodedModels = try JSONDecoder().decode(Models.self, from: data)
-					if let models = decodedModels.data {
-						continuation.resume(returning: models)
-					} else {
-						print("decodedModels is null.")
-						continuation.resume(throwing: AvailableModelsError.badKey)
-					}
-					
+					continuation.resume(returning: decodedModels.data ?? [])
 				} catch {
 					continuation.resume(throwing: error)
 				}
@@ -114,15 +115,17 @@ extension Models {
 	}
 	
 	enum AvailableModelsError: Error {
-		case badKey
 		case invalidURL
+		case networkFailure
+		case badKey
+		case badResponse(status: Int)
 		
 		var description: String {
 			switch self {
-			case .badKey:
-				"Your API key didn't return any results. It is invalid."
-			case .invalidURL:
-				"The URL used to fetch the list of available models is invalid."
+			case .invalidURL: "Invalid URL for models endpoint."
+			case .networkFailure: "No HTTP response received."
+			case .badKey: "Invalid API key (401 unauthorized)."
+			case .badResponse(let status): "API error (status \(status))."
 			}
 		}
 	}

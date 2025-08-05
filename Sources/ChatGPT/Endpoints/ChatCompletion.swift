@@ -164,7 +164,7 @@ public struct ChatCompletion {
 		///
 		/// Can be used in conjunction with the `seed` request parameter to understand when backend changes have been made
 		/// that might impact determinism.
-		public let systemFingerprint: String
+		public let systemFingerprint: String?
 		
 		private enum CodingKeys: String, CodingKey {
 			case id, object, created, model, choices, usage
@@ -181,7 +181,7 @@ public struct ChatCompletion {
 			public let message: Message
 			
 			/// The reason the model stopped generating tokens.
-			public let finishReason: String
+			public let finishReason: String?
 			
 			private enum CodingKeys: String, CodingKey {
 				case index, message

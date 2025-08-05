@@ -12,8 +12,8 @@ final class ChatGPTTests: XCTestCase {
 		print("")
 
 		let models: [ChatGPTModel] = [
-			.init(.gpt_3),
-			.init(.gpt_4),
+			.init(.gpt35Turbo),
+			.init(.gpt4),
 		]
 		
 		var additionAmount = 0.00001
@@ -35,15 +35,16 @@ final class ChatGPTTests: XCTestCase {
 		}
     }
 	
-	// MARK: - Add API key & delete after test. -
-	
 	func testAvailableModels() async throws {
+		let apiKey = ProcessInfo.processInfo.environment["API_KEY"] ?? ""
 		let models = try await Models.fetchChatCompletion(
-			with: "",
+			with: apiKey,
 			priceAdjustmentFactor: 2
 		)
 		
-		models.sorted(by: { $0.name < $1.name }).forEach { print("\($0.name) has an ID of: \($0.id).") }
+		models.sorted(by: { $0.name < $1.name }).forEach {
+			print("\($0.name) has an ID of: \($0.id)")
+		}
 	}
 	
 	func testServerCompatibility() async throws {
@@ -62,7 +63,7 @@ final class ChatGPTTests: XCTestCase {
 		
 		print("")
 		
-		let model = ChatGPTModel(.gpt_3, priceAdjustmentFactor: 1)
+		let model = ChatGPTModel(.gpt35Turbo, priceAdjustmentFactor: 1)
 		
 		let userID = "sampleUserID1"
 		
@@ -98,12 +99,29 @@ message.
 			let output = try JSONDecoder().decode(AISandboxServerOutput.self, from: data)
 			print(String(format: "%.6f", output.cost))
 		} catch {
-			print("We had a problem processing the response from the server. \(error)")
-			let output = try JSONDecoder().decode(
-				ChatCompletion.BadResponse.OpenAIError.self,
-				from: data
-			)
-			print(output)
+			print("We had a problem processing the response from the server:\n\(error)\n")
+				
+			if let jsonString = String(data: data, encoding: .utf8) {
+				print("Raw JSON:\n\(jsonString)\n")
+				
+				// Handle your custom server error format
+				struct CustomServerError: Decodable {
+					let error: Bool
+					let reason: String
+				}
+				
+				if let customError = try? JSONDecoder().decode(CustomServerError.self, from: data) {
+					print("Custom server error:\n\(customError.reason)\n")
+					XCTAssertEqual(customError.reason, "noUser")
+				} else if let output = try? JSONDecoder().decode(
+					ChatCompletion.BadResponse.OpenAIError.self,
+					from: data
+				 ) {
+					 print(output)
+				 }
+			} else {
+				print("Failed to convert data to string")
+			}
 		}
 		
 		print("")
